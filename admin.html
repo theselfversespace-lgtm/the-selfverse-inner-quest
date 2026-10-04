@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INNER QUEST — Admin</title>
+<style>
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;
+    background:radial-gradient(circle at top,#18213d 0,#080b16 48%,#05060b 100%);
+    color:#fff;
+  }
+  .wrap{width:min(1100px,92%);margin:auto;padding:42px 0 60px}
+  header{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:32px}
+  .brand{letter-spacing:3px;font-weight:800}
+  .brand small{display:block;color:#8f9bb8;font-size:11px;letter-spacing:2px;margin-top:7px}
+  button{
+    border:0;border-radius:12px;padding:12px 18px;cursor:pointer;
+    background:#fff;color:#080b16;font-weight:700
+  }
+  .login{
+    max-width:430px;margin:8vh auto;background:rgba(255,255,255,.07);
+    border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:30px;
+    backdrop-filter:blur(16px)
+  }
+  h1{margin:0 0 8px;font-size:30px}
+  p{color:#aab3c8;line-height:1.6}
+  input{
+    width:100%;padding:14px 15px;margin:8px 0;border-radius:12px;
+    border:1px solid rgba(255,255,255,.15);background:#0d1120;color:white;outline:none
+  }
+  .primary{width:100%;margin-top:10px;background:#8ee7c1}
+  .error{color:#ff9b9b;min-height:22px;font-size:14px}
+  .dashboard{display:none}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .card{
+    background:rgba(255,255,255,.065);border:1px solid rgba(255,255,255,.11);
+    border-radius:20px;padding:23px;min-height:150px
+  }
+  .label{color:#9ca8c2;font-size:13px}
+  .num{font-size:42px;font-weight:800;margin:15px 0 4px}
+  .sub{color:#77839f;font-size:12px}
+  .section{margin-top:18px}
+  .activity{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .status{display:flex;align-items:center;gap:8px;color:#aab3c8;flex-wrap:wrap}
+  .dot{width:9px;height:9px;border-radius:50%;background:#8ee7c1;display:inline-block}
+  .note{
+    margin-top:20px;padding:16px 18px;border-radius:15px;
+    background:rgba(142,231,193,.07);border:1px solid rgba(142,231,193,.15);
+    color:#aab3c8;font-size:13px;line-height:1.6
+  }
+  @media(max-width:800px){
+    .grid{grid-template-columns:repeat(2,1fr)}
+    .activity{grid-template-columns:1fr}
+  }
+  @media(max-width:500px){
+    .wrap{padding-top:25px}.grid{grid-template-columns:1fr}
+    header{align-items:flex-start}
+  }
+</style>
+</head>
+<body>
+
+<div id="loginBox" class="login">
+  <h1>INNER QUEST</h1>
+  <p>Private administrator access.</p>
+  <input id="email" type="email" placeholder="Admin email">
+  <input id="password" type="password" placeholder="Password">
+  <div id="error" class="error"></div>
+  <button id="loginBtn" class="primary">Enter Dashboard</button>
+</div>
+
+<div id="dashboard" class="dashboard">
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        THE SELFVERSE
+        <small>INNER QUEST · ADMIN</small>
+      </div>
+      <div class="status">
+      <span class="dot"></span> Private Dashboard
+      <button id="refreshBtn">Refresh</button>
+      <button id="logoutBtn">Log out</button>
+    </div>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <div class="label">REGISTERED PLAYERS</div>
+        <div id="playersCount" class="num">—</div>
+        <div class="sub">Total player accounts</div>
+      </div>
+
+      <div class="card">
+        <div class="label">JOURNEYS STARTED</div>
+        <div id="journeysCount" class="num">—</div>
+        <div class="sub">Recorded game starts</div>
+      </div>
+
+      <div class="card">
+        <div class="label">CHAPTERS COMPLETED</div>
+        <div id="chaptersCount" class="num">—</div>
+        <div class="sub">Completed chapter events</div>
+      </div>
+
+      <div class="card">
+        <div class="label">ACTIVE RECENTLY</div>
+        <div id="activeCount" class="num">—</div>
+        <div class="sub">Active in the last 5 minutes</div>
+      </div>
+    </div>
+
+    <div class="activity section">
+      <div class="card">
+        <div class="label">TODAY</div>
+        <div id="todayCount" class="num">—</div>
+        <div class="sub">New registrations</div>
+      </div>
+      <div class="card">
+        <div class="label">LAST 7 DAYS</div>
+        <div id="weekCount" class="num">—</div>
+        <div class="sub">New registrations</div>
+      </div>
+      <div class="card">
+        <div class="label">LAST 30 DAYS</div>
+        <div id="monthCount" class="num">—</div>
+        <div class="sub">New registrations</div>
+      </div>
+    </div>
+
+
+    <div class="card section" style="margin-top:18px;min-height:auto">
+      <div class="label">CHAPTER ACCESS CONTROL</div>
+      <div style="font-size:18px;font-weight:800;margin:10px 0 6px">Global chapter unlock</div>
+      <div class="sub">Choose the highest chapter players are allowed to enter. Chapters above it stay locked.</div>
+      <div id="unlockStatus" style="margin:16px 0;font-size:15px;color:#8ee7c1">Loading…</div>
+      <div id="chapterButtons" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+      <div id="unlockError" style="margin-top:12px;color:#ff9b9b;font-size:13px"></div>
+    </div>
+
+    <div class="note">
+      <strong>Privacy:</strong> This dashboard is intended for authorized administrators.
+      Player names and personal information are not displayed here. The current INNER QUEST
+      player system uses anonymous Firebase authentication.
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import {
+  getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+import {
+  getFirestore, collection, getDocs, doc, getDoc, setDoc, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCTdIKIg1h2HTUvReJzdA3jI9Mmaoz0aj0",
+  authDomain: "the-selfverse--inner-quest.firebaseapp.com",
+  projectId: "the-selfverse--inner-quest",
+  storageBucket: "the-selfverse--inner-quest.firebasestorage.app",
+  messagingSenderId: "793748264602",
+  appId: "1:793748264602:web:27d554f90fdd51f2b9f123",
+  measurementId: "G-EQHWXV6GWS"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const loginBox = document.getElementById("loginBox");
+const dashboard = document.getElementById("dashboard");
+const errorBox = document.getElementById("error");
+let refreshTimer = null;
+
+document.getElementById("loginBtn").addEventListener("click", async () => {
+  errorBox.textContent = "";
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+
+  if (!email || !password) {
+    errorBox.textContent = "Enter your admin email and password.";
+    return;
+  }
+
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch (err) {
+    errorBox.textContent = "Login failed. Check your admin credentials.";
+    console.error(err);
+  }
+});
+
+document.getElementById("refreshBtn").addEventListener("click", async () => {
+  await loadDashboard();
+  await loadChapterAccess();
+});
+
+document.getElementById("logoutBtn").addEventListener("click", async () => {
+  if (refreshTimer) {
+    clearInterval(refreshTimer);
+    refreshTimer = null;
+  }
+  await signOut(auth);
+  errorBox.textContent = "";
+});
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    loginBox.style.display = "block";
+    dashboard.style.display = "none";
+    if (refreshTimer) {
+      clearInterval(refreshTimer);
+      refreshTimer = null;
+    }
+    return;
+  }
+
+  loginBox.style.display = "none";
+  dashboard.style.display = "block";
+  errorBox.textContent = "";
+  await loadDashboard();
+  await loadChapterAccess();
+
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(() => {
+    if (auth.currentUser) { loadDashboard(); loadChapterAccess(); }
+  }, 30000);
+});
+
+const chapterNames=["UNDERSTANDING YOURSELF","THE MIND","EMOTIONS","RELATIONSHIPS","SELF-WORTH","STUDENT LIFE","WHEN LIFE FEELS HEAVY","GROWING FORWARD"];
+
+async function loadChapterAccess(){
+  const status=document.getElementById("unlockStatus");
+  const box=document.getElementById("chapterButtons");
+  const error=document.getElementById("unlockError");
+  error.textContent="";
+  try{
+    const ref=doc(db,"gameSettings","main");
+    const snap=await getDoc(ref);
+    const max=snap.exists()?Math.min(8,Math.max(1,Number(snap.data().maxUnlockedChapter||1))):1;
+    status.textContent=`Currently unlocked: Chapter ${max} — ${chapterNames[max-1]}`;
+    box.innerHTML="";
+    chapterNames.forEach((name,i)=>{
+      const b=document.createElement("button");
+      b.textContent=(i+1<=max?"✓ ":"🔒 ")+`Chapter ${i+1}`;
+      b.style.background=i+1<=max?"#8ee7c1":"#1a2135";
+      b.style.color=i+1<=max?"#080b16":"#d9deeb";
+      b.title=name;
+      b.addEventListener("click",()=>setChapterAccess(i+1));
+      box.appendChild(b);
+    });
+  }catch(err){
+    console.error(err);
+    status.textContent="Unable to read chapter access.";
+    error.textContent="Check the Firestore rules and try Refresh.";
+  }
+}
+
+async function setChapterAccess(chapter){
+  const error=document.getElementById("unlockError");
+  error.textContent="";
+  try{
+    await setDoc(doc(db,"gameSettings","main"),{maxUnlockedChapter:chapter,updatedAt:serverTimestamp(),updatedBy:auth.currentUser.uid},{merge:true});
+    await loadChapterAccess();
+  }catch(err){
+    console.error(err);
+    error.textContent="Could not change chapter access. Make sure the new Firestore rules are published.";
+  }
+}
+
+async function loadDashboard() {
+  try {
+    const snapshot = await getDocs(collection(db, "players"));
+    const players = snapshot.docs.map(d => d.data());
+
+    const now = new Date();
+    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+    const todayStart = new Date(now);
+    todayStart.setHours(0,0,0,0);
+    const weekStart = new Date(now);
+    weekStart.setDate(weekStart.getDate() - 7);
+    const monthStart = new Date(now);
+    monthStart.setDate(monthStart.getDate() - 30);
+
+    let journeys = 0;
+    let chapters = 0;
+    let active = 0;
+    let today = 0;
+    let week = 0;
+    let month = 0;
+
+    for (const p of players) {
+      journeys += Number(p.gamesStarted || 0);
+      chapters += Number(p.chaptersCompleted || 0);
+
+      const registered = toDate(p.registeredAt);
+      const lastActive = toDate(p.lastActiveAt);
+
+      if (lastActive && lastActive >= fiveMinutesAgo) active++;
+      if (registered && registered >= todayStart) today++;
+      if (registered && registered >= weekStart) week++;
+      if (registered && registered >= monthStart) month++;
+    }
+
+    document.getElementById("playersCount").textContent = players.length;
+    document.getElementById("journeysCount").textContent = journeys;
+    document.getElementById("chaptersCount").textContent = chapters;
+    document.getElementById("activeCount").textContent = active;
+    document.getElementById("todayCount").textContent = today;
+    document.getElementById("weekCount").textContent = week;
+    document.getElementById("monthCount").textContent = month;
+
+  } catch (err) {
+    console.error(err);
+    document.getElementById("playersCount").textContent = "—";
+    document.getElementById("journeysCount").textContent = "—";
+    document.getElementById("chaptersCount").textContent = "—";
+    document.getElementById("activeCount").textContent = "—";
+    document.getElementById("todayCount").textContent = "—";
+    document.getElementById("weekCount").textContent = "—";
+    document.getElementById("monthCount").textContent = "—";
+    errorBox.textContent = "Dashboard access needs the admin Firestore rules configured.";
+  }
+}
+
+function toDate(value) {
+  if (!value) return null;
+  if (typeof value.toDate === "function") return value.toDate();
+  if (value instanceof Date) return value;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+</script>
+</body>
+</html>
